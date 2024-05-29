@@ -47,18 +47,48 @@ This project demonstrates how to set up HashiCorp Vault using Docker Compose for
     aws eks update-kubeconfig --name my-cluster
     ```
 
-4. Apply the Vault ConfigMap and Deployment manifests:
+4. Create an S3 bucket for Vault storage backend:
+    ```shell
+    aws s3api create-bucket --bucket my-vault-bucket --region <region>
+    ```
+
+5. Create IAM roles and policies for Vault:
+    ```shell
+    aws iam create-role --role-name VaultRole --assume-role-policy-document file://trust-policy.json
+    aws iam put-role-policy --role-name VaultRole --policy-name VaultPolicy --policy-document file://vault-policy.json
+    ```
+
+6. Update the Vault ConfigMap and Deployment manifests to include AWS-specific settings:
+    ```yaml
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: vault-config
+    data:
+      config.hcl: |
+        storage "s3" {
+          bucket = "my-vault-bucket"
+          region = "<region>"
+        }
+        listener "tcp" {
+          address = "0.0.0.0:8300"
+          tls_disable = 1
+        }
+        ui = true
+    ```
+
+7. Apply the Vault ConfigMap and Deployment manifests:
     ```shell
     kubectl apply -f vault-config.yaml
     kubectl apply -f vault-deployment.yaml
     ```
 
-5. Check the deployment status:
+8. Check the deployment status:
     ```shell
     kubectl get pods -l app=vault
     ```
 
-6. Port forward to access the Vault UI:
+9. Port forward to access the Vault UI:
     ```shell
     kubectl port-forward service/vault 8300:8300
     ```
@@ -75,18 +105,47 @@ This project demonstrates how to set up HashiCorp Vault using Docker Compose for
     gcloud container clusters get-credentials my-cluster --zone <zone>
     ```
 
-4. Apply the Vault ConfigMap and Deployment manifests:
+4. Create a GCP Cloud Storage bucket for Vault storage backend:
+    ```shell
+    gsutil mb -l <region> gs://my-vault-bucket
+    ```
+
+5. Create IAM roles and policies for Vault:
+    ```shell
+    gcloud iam roles create VaultRole --project=<project-id> --file=role-definition.yaml
+    gcloud projects add-iam-policy-binding <project-id> --member=serviceAccount:<service-account-email> --role=projects/<project-id>/roles/VaultRole
+    ```
+
+6. Update the Vault ConfigMap and Deployment manifests to include GCP-specific settings:
+    ```yaml
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: vault-config
+    data:
+      config.hcl: |
+        storage "gcs" {
+          bucket = "my-vault-bucket"
+        }
+        listener "tcp" {
+          address = "0.0.0.0:8300"
+          tls_disable = 1
+        }
+        ui = true
+    ```
+
+7. Apply the Vault ConfigMap and Deployment manifests:
     ```shell
     kubectl apply -f vault-config.yaml
     kubectl apply -f vault-deployment.yaml
     ```
 
-5. Check the deployment status:
+8. Check the deployment status:
     ```shell
     kubectl get pods -l app=vault
     ```
 
-6. Port forward to access the Vault UI:
+9. Port forward to access the Vault UI:
     ```shell
     kubectl port-forward service/vault 8300:8300
     ```
