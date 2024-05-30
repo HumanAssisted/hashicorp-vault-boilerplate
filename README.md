@@ -211,6 +211,83 @@ This project demonstrates how to set up HashiCorp Vault using Docker Compose for
     }
     ```
 
+## Python Client Libraries
+1. Ensure Python 3.11 is installed.
+2. Install the `hvac` library:
+    ```sh
+    pip install hvac
+    ```
+
+3. Example Python code to save and retrieve private keys and system secrets:
+
+    ```python
+    import os
+    import hvac
+
+    # Set the VAULT_ADDR environment variable
+    os.environ['VAULT_ADDR'] = 'http://127.0.0.1:8300'
+
+    # Use the root token for authentication
+    root_token = 'root'
+
+    def save_private_key(user_id: str, encrypted_key: str):
+        client = hvac.Client(token=root_token)
+        path = f'secret/user_keys/{user_id}'
+        client.secrets.kv.v2.create_or_update_secret(path=path, secret={'key': encrypted_key})
+        print(f"Encrypted key for user_id {user_id} saved successfully.")
+
+    def retrieve_private_key(user_id: str) -> str:
+        client = hvac.Client(token=root_token)
+        path = f'secret/user_keys/{user_id}'
+        try:
+            result = client.secrets.kv.v2.read_secret_version(path=path)
+            return result['data']['data']['key']
+        except hvac.exceptions.InvalidPath:
+            print(f"No key found for user_id {user_id}")
+            return ""
+
+    def write_system_secret(secret_name: str, secret_value: str):
+        client = hvac.Client(token=root_token)
+        path = f'secret/data/system_secrets/{secret_name}'
+        try:
+            response = client.secrets.kv.v2.create_or_update_secret(path=path, secret={'value': secret_value})
+            print(f"Response from Vault: {response}")
+        except hvac.exceptions.Forbidden as e:
+            print(f"Permission denied error: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        print(f"System secret for secret_name {secret_name} saved successfully.")
+
+    def retrieve_system_secret(secret_name: str) -> str:
+        client = hvac.Client(token=root_token)
+        path = f'secret/data/system_secrets/{secret_name}'
+        try:
+            result = client.secrets.kv.v2.read_secret_version(path=path)
+            secret_value = result['data']['data']['value']
+            os.environ[secret_name] = secret_value
+            return secret_value
+        except hvac.exceptions.InvalidPath:
+            print(f"No secret found for secret_name {secret_name}")
+            return ""
+
+    if __name__ == "__main__":
+        # Test the functions
+        save_private_key("test_user", "test_encrypted_key")
+        print(retrieve_private_key("test_user"))
+        write_system_secret("test_secret", "test_value")
+        print(retrieve_system_secret("test_secret"))
+    ```
+
+4. Run the script to test the functions:
+    ```sh
+    python test_save_private_key.py
+    ```
+
+5. Run the unit tests to verify functionality:
+    ```sh
+    python3 -m unittest discover
+    ```
+
 ## Best Practices
 1. Use environment variables for sensitive information.
 2. Regularly rotate secrets and credentials.
