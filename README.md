@@ -280,7 +280,12 @@ This project demonstrates how to set up HashiCorp Vault using Docker Compose for
 
 4. Run the script to test the functions:
     ```sh
-    python save_private_key.py
+    python test_save_private_key.py
+    ```
+
+5. Run the unit tests to verify functionality:
+    ```sh
+    python3 -m unittest discover
     ```
 
 ## Best Practices
