@@ -1,4 +1,4 @@
-# HashiCorp Vault with Rust Client Libraries
+# HashiCorp Vault with Rust and Python Client Libraries
 
 NOTE: designed by [a GPT](https://chatgpt.com/g/g-MLS47XGDi-devin-playbook-composer-unofficial) and built 100% by [Devin](https://preview.devin.ai/)
 
