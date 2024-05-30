@@ -1,5 +1,7 @@
 # HashiCorp Vault with Rust Client Libraries
 
+NOTE: designed by [a GPT](https://chatgpt.com/g/g-MLS47XGDi-devin-playbook-composer-unofficial) and built 100% by [Devin](https://preview.devin.ai/)
+
 ## Overview
 This project demonstrates how to set up HashiCorp Vault using Docker Compose for local development and Kubernetes for production. It also includes a Rust client that interacts with Vault to retrieve secrets and implements cloud-neutral authentication using AppRole.
 
